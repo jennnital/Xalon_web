@@ -1,5 +1,4 @@
 
-
 const randnum = (min, max) => Math.round(Math.random() * (max - min) + min);
 
 class CannonHelper{
@@ -12,13 +11,15 @@ class CannonHelper{
         renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
 
         // LIGHTS
-/*        const ambient = new THREE.AmbientLight( 0x888888 );
-        this.scene.add( ambient );*/
 
-        const light = new THREE.DirectionalLight( 0xdddddd, .25, 1 );
+
+        const ambient = new THREE.AmbientLight( 0xfc03d3 );
+        this.scene.add( ambient );
+
+        const light = new THREE.DirectionalLight( 0xfc03d3, 5, 1 );
         light.position.set( 3, 10, 4 );
         light.target.position.set( 0, 0, 0 );
-        light.castShadow = true;
+        light.castShadow = false;
 
         this.sun = light;
         this.scene.add(light);
@@ -66,7 +67,7 @@ class CannonHelper{
 
     addVisual(body, name, castShadow=false, receiveShadow=true){
     body.name = name;
-    if (this.currentMaterial===undefined) this.currentMaterial = new THREE.MeshLambertMaterial({color:0x888888});
+    if (this.currentMaterial===undefined) this.currentMaterial = new THREE.MeshLambertMaterial({color:0xfc03d3});
     if (this.settings===undefined){
       this.settings = {
         stepFrequency: 60,
@@ -94,7 +95,7 @@ class CannonHelper{
         maxSubSteps:3
       }
       this.particleGeo = new THREE.SphereGeometry( 1, 16, 8 );
-      this.particleMaterial = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
+      this.particleMaterial = new THREE.MeshLambertMaterial( { color: 0xfc03d3 } );
     }
     // What geometry should be used?
     let mesh;
@@ -139,10 +140,10 @@ class CannonHelper{
         const submesh = new THREE.Object3D();
 
          THREE.ImageUtils.crossOrigin = '';
-          var floorMap = THREE.ImageUtils.loadTexture( "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMaznkwKbnlWTf0zzL9uQrUQ2Q54MfyI7JC5m62icHR5oRjT1v" );
+          var floorMap = THREE.ImageUtils.loadTexture( "https://192.168.0.7:4000/upload/0009.png" );
           floorMap.wrapS = floorMap.wrapT = THREE.RepeatWrapping;
           floorMap.repeat.set( 25, 25 );
-          var groundMaterial = new THREE.MeshPhongMaterial( { color: new THREE.Color('#111'), specular: new THREE.Color('black'), shininess: 0, bumpMap: floorMap } );
+          var groundMaterial = new THREE.MeshPhongMaterial( { color: new THREE.Color('0xfc03d3'), specular: new THREE.Color('black'), shininess: 0, bumpMap: floorMap } );
 
 
         const ground = new THREE.Mesh( geometry, groundMaterial );
@@ -156,7 +157,7 @@ class CannonHelper{
         const box_geometry = new THREE.BoxGeometry(  shape.halfExtents.x*2,
                               shape.halfExtents.y*2,
                               shape.halfExtents.z*2 );
-        mesh = new THREE.Mesh( box_geometry, new THREE.MeshLambertMaterial({color:0x888888, wireframe: true, transparent: true, opacity:0}) );
+        mesh = new THREE.Mesh( box_geometry, new THREE.MeshLambertMaterial({color:0xfc03d3, wireframe: true, transparent: true, opacity:0}) );
         break;
 
       case CANNON.Shape.types.CONVEXPOLYHEDRON:
@@ -215,19 +216,19 @@ class CannonHelper{
          var rev = true;
         var cols = [{
           stop: 0,
-          color: new THREE.Color('#B0E0E6')
+          color: new THREE.Color('#fc03d3')
         }, {
           stop: .25,
-          color: new THREE.Color('#CD853F')
+          color: new THREE.Color('#fc03d3')
         }, {
           stop: .5,
-          color: new THREE.Color('#EEE8AA')
+          color: new THREE.Color('#fc036b')
         }, {
           stop: .75,
-          color: new THREE.Color('#bf8040')
+          color: new THREE.Color('#faa2fa')
         }, {
           stop: 1,
-          color: new THREE.Color('#666')
+          color: new THREE.Color('#ffc4f8')
         }];
 
         setGradient(geometry, cols, 'z', rev);
@@ -266,7 +267,9 @@ class CannonHelper{
 
         var mat = new THREE.MeshLambertMaterial({
           vertexColors: THREE.VertexColors,
-          wireframe: false
+          wireframe: true,
+          transparency: true,
+          opacity: 0.8
         });
 
 
@@ -357,17 +360,29 @@ let flagLocation;
 let raycastHelperMesh;
 let plane;
 let uniforms;
+let bgTexture;
+let bgWidth;
+let bgHeight;
 
+var loader = new THREE.TextureLoader();
 var scene = new THREE.Scene();
+bgTexture = loader.load('bg1.jpg');
+
+
+scene.background = bgTexture;
+bgTexture.wrapS = THREE.MirroredRepeatWrapping;
+bgTexture.wrapT = THREE.MirroredRepeatWrapping;
+
 
 var camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, .01, 100000 );
-camera.position.set( 1, 1, -1 );
+camera.position.set( 1, 1, -1.5 );
 camera.lookAt( scene.position );
 
 
 
-renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true } );
+renderer = new THREE.WebGLRenderer( { powerPreference: "high-performance", antialias: false, alpha: true, stencil: false, depth: false } );
 renderer.setSize( window.innerWidth, window.innerHeight );
+renderer.setClearColor( 0x000000, 0);
 renderer.shadowMap.enabled = true;
 renderer.shadowMapSoft = true; // Shadow
 renderer.shadowMapType = THREE.PCFShadowMap; //Shadow
@@ -406,12 +421,6 @@ document.body.appendChild( renderer.domElement );
 
 
 
-  //===================================================== add front & back lighting
- var light = new THREE.DirectionalLight( new THREE.Color("gray"), 1);
- light.position.set(1, 1, 1).normalize();
- scene.add(light);
-
-
 
 
 
@@ -428,6 +437,12 @@ window.addEventListener("resize", function() {
 });
 
 
+//===================================================== add front & back lighting
+var light = new THREE.DirectionalLight( new THREE.Color("#faa2fa"), 3);
+light.caseShadow=false;
+light.position.set(1,1,1).normalize();
+scene.add(light);
+
 
 //========================================================== effects
 var SCALE = 2;
@@ -436,11 +451,16 @@ var hTilt = new THREE.ShaderPass(THREE.HorizontalTiltShiftShader);
 hTilt.enabled = false;
 hTilt.uniforms.h.value = 4 / (SCALE * window.innerHeight);
 
+
+
 var renderPass = new THREE.RenderPass(scene, camera);
 var effectCopy = new THREE.ShaderPass(THREE.CopyShader);
+
 effectCopy.renderToScreen = true;
 
-var composer = new THREE.EffectComposer(renderer);
+
+
+const composer = new THREE.EffectComposer(renderer);
 composer.addPass(renderPass);
 composer.addPass(hTilt);
 composer.addPass(effectCopy);
@@ -449,6 +469,8 @@ composer.addPass(effectCopy);
 var controls = new function() {
   this.hTilt = false;
   this.hTiltR = 0.5;
+
+
   this.onChange = function() {
     hTilt.enabled = controls.hTilt;
     hTilt.uniforms.r.value = controls.hTiltR;
@@ -462,7 +484,7 @@ gui.add(controls, 'hTiltR', 0, 1).onChange(controls.onChange);
 
 //activate tilt effect
 document.querySelector('.dg .c input[type="checkbox"]').click();
-dat.GUI.toggleHide();
+// dat.GUI.toggleHide();
 
 
 
@@ -521,8 +543,11 @@ Object.defineProperties(THREE.Object3D.prototype, {
 });
 
 
-
-
+//========================================================add 3D buttons
+//
+// var aboutButton = makeElementObject('div', 300, 300);
+// aboutButton.css3DObject.element.style.border = '1px solid pink';
+// aboutButton.css3DObject.element.textContent = "About";
 
 
 
@@ -536,11 +561,13 @@ mesh = new THREE.Mesh( geometry, material );
 scene.add( mesh );
 
 
-var light = new THREE.DirectionalLight( new THREE.Color('white'), .5 );
-light.position.set( 0, 1, 0 );
-light.castShadow = true;
+var light = new THREE.DirectionalLight( new THREE.Color('#faa2fa'), .5 );
+light.position.set( 1, 1, 1 );
+light.castShadow = false;
 light.target = mesh;//shadow will follow mesh
 mesh.add( light );
+
+
 
 
 
@@ -552,7 +579,7 @@ var clip2;
 var clip3;
 
 var loader = new THREE.GLTFLoader();
-loader.load( 'https://raw.githubusercontent.com/baronwatts/models/master/astronaut.glb', function ( object ) {
+loader.load( 'character2.glb', function ( object ) {
    object.scene.traverse( function( node ) {
       if ( node instanceof THREE.Mesh ) {
         node.castShadow = true;
@@ -561,12 +588,14 @@ loader.load( 'https://raw.githubusercontent.com/baronwatts/models/master/astrona
   });
 
   var player = object.scene;
-  player.position.set(0, -.1, 0 );
+  player.position.set(0, .4, 0 );
   player.scale.set(.25,.25,.25);
+  player.rotateY(-1);
   mesh.add(player);
 
-/*  var lightPlayer = new THREE.PointLight(new THREE.Color('wheat'), 10, .5);
-  mesh.add(lightPlayer);*/
+
+  var lightPlayer = new THREE.PointLight(new THREE.Color('pink'), -1, 5);
+  mesh.add(lightPlayer);
 
 
 
@@ -578,10 +607,48 @@ loader.load( 'https://raw.githubusercontent.com/baronwatts/models/master/astrona
 
 });
 
+var loader3 = new THREE.GLTFLoader();
+loader.load( 'character3.glb', function ( object ) {
+   object.scene.traverse( function( node ) {
+      if ( node instanceof THREE.Mesh ) {
+        node.castShadow = true;
+        node.material.side = THREE.DoubleSide;
+      }
+  });
+
+  var player3 = object.scene;
+  player3.position.set(3, -0.3, 0 );
+  player3.scale.set(.2,.2,.2);
+  player3.rotateY(1);
+  mesh.add(player3);
 
 
+  var lightPlayer3 = new THREE.PointLight(new THREE.Color('pink'), -1, 5);
+  mesh.add(lightPlayer3);
+
+});
 
 
+var loader4 = new THREE.GLTFLoader();
+loader.load( 'character4.glb', function ( object ) {
+   object.scene.traverse( function( node ) {
+      if ( node instanceof THREE.Mesh ) {
+        node.castShadow = true;
+        node.material.side = THREE.DoubleSide;
+      }
+  });
+
+  var player4 = object.scene;
+  player4.position.set(-8, -0.3, 0 );
+  player4.scale.set(.2,.2,.2);
+  player4.rotateY(-1);
+  mesh.add(player4);
+
+
+  var lightPlayer4 = new THREE.PointLight(new THREE.Color('pink'), -1, 5);
+  mesh.add(lightPlayer4);
+
+});
 
 //===================================================== add Terrain
 var sizeX = 128, sizeY = 128, minHeight = 0, maxHeight = 60;
@@ -664,10 +731,10 @@ var img2matrix = function () {
 
 
 
-//can add an array if things
+//can add an array of things // url
 var check;
 Promise.all( [
-  img2matrix.fromUrl( 'https://upload.wikimedia.org/wikipedia/commons/5/57/Heightmap.png', sizeX, sizeY, minHeight, maxHeight )(),
+  img2matrix.fromUrl( '0009.png', sizeX, sizeY, minHeight, maxHeight )(),
 ] ).then( function ( data ) {
 
   var matrix = data[ 0 ];
@@ -773,7 +840,7 @@ flagLocation.add(cylinder);
 
 
 //flag light
-var pointflagLight = new THREE.PointLight(new THREE.Color('red'), 1.5, 5);
+var pointflagLight = new THREE.PointLight(new THREE.Color('pink'), 1.5, 5);
 pointflagLight.position.set(0, 0, 0);
 flagLocation.add(pointflagLight);
 
@@ -786,7 +853,7 @@ scene.add( flagLight );
 
 
 //flag
- var texture = new THREE.TextureLoader().load('https://raw.githubusercontent.com/baronwatts/images/master/dogeflag1.png');
+ var texture = new THREE.TextureLoader().load('0009.png');
 plane = new THREE.Mesh(new THREE.PlaneGeometry(600, 430, 20, 20, true), new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide }) );
 plane.scale.set(.0025, .0025, .0025);
 plane.position.set(0, 1.5, 0);
@@ -848,7 +915,7 @@ loader.load("https://raw.githubusercontent.com/baronwatts/models/master/moon-veh
   var textureLoader = new THREE.TextureLoader();
   textureLoader.crossOrigin = ''; //allow cross origin loading
 
-  const imageSrc = textureLoader.load('https://raw.githubusercontent.com/baronwatts/models/master/snowflake.png');
+  const imageSrc = textureLoader.load('X_logo.png');
   const shaderPoint = THREE.ShaderLib.points;
 
   uniforms = THREE.UniformsUtils.clone(shaderPoint.uniforms);
@@ -856,12 +923,12 @@ loader.load("https://raw.githubusercontent.com/baronwatts/models/master/moon-veh
 
   var matts = new THREE.PointsMaterial({
       size: 2,
-      color: new THREE.Color("white"),
+      // color: new THREE.Color("white"),
       map:  uniforms.map.value,
-      blending: THREE.AdditiveBlending,
+      blending: THREE.NormalBlending,
       depthWrite: false,
       transparent: true,
-      opacity: 0.75
+      opacity: 1
   });
 
  var geo = new THREE.Geometry();
@@ -871,18 +938,18 @@ loader.load("https://raw.githubusercontent.com/baronwatts/models/master/moon-veh
   }
 
   var sparks = new THREE.Points(geo, matts );
-  sparks.scale.set(1,1,1);
+  sparks.scale.set(.05,.05,.05);
   scene.add(sparks);
 
   sparks.geometry.vertices.map((d,i)=>{
-    d.y = randnum(30,40);
+    d.y = randnum(-500,500);
     d.x = randnum(-500, 500);
     d.z = randnum(-500, 500);
   });
 
 
 
-//===================================================== Joystick
+//===================================================== Joystick // here i can change joystick to X button div in html
 class JoyStick{
   constructor(options){
     const circle = document.createElement("div");
@@ -986,7 +1053,7 @@ function joystickCallback( forward, turn ){
 }
 
 function updateDrive(forward=js.forward, turn=js.turn){
-  const maxSteerVal = 0.05;
+  const maxSteerVal = 0.2;
   const maxForce = .15;
   const brakeForce = 10;
 
@@ -1013,8 +1080,8 @@ scene.add(followCam);
 followCam.parent = mesh;
 function updateCamera(){
   if(followCam){
-      camera.position.lerp(followCam.getWorldPosition(new THREE.Vector3()), 0.05);
-      camera.lookAt(mesh.position.x, mesh.position.y + .5, mesh.position.z);
+      camera.position.lerp(followCam.getWorldPosition(new THREE.Vector3()), 0.01); //catching up to model
+      camera.lookAt(mesh.position.x, mesh.position.y +0.6 , mesh.position.z);
   }
 }
 
@@ -1022,12 +1089,20 @@ function updateCamera(){
 //===================================================== animate
 var clock = new THREE.Clock();
 var lastTime;
+
+
+
+
 (function animate() {
     requestAnimationFrame( animate );
     updateCamera();
     updateDrive();
-    renderer.render( scene, camera );
-    //composer.render();
+
+    renderer.render(scene, camera );
+    // renderer.render(scene2, camera2);
+
+
+    composer.render(clock.getDelta());
 
     let delta = clock.getDelta();
     mixers.map(x=>x.update(delta));
@@ -1068,3 +1143,69 @@ var lastTime;
 
 
 })();
+
+
+//-----------------------------------------------------------------scene 2
+// let renderer2;
+// let bg2Texture;
+// let bg2Width;
+// let bg2Height;
+//
+// var scene2 = new THREE.Scene();
+// bgTexture = loader.load('bg1.jpg');
+//
+//
+// scene2.background = bg2Texture;
+// // bg2Texture.wrapS = THREE.MirroredRepeatWrapping;
+// // bg2Texture.wrapT = THREE.MirroredRepeatWrapping;
+//
+//
+// var camera2 = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, .01, 100000 );
+// camera2.position.set( 1, 1, -1 );
+// camera2.lookAt( scene2.position );
+//
+//
+//
+// renderer = new THREE.WebGLRenderer( { powerPreference: "high-performance", antialias: false, alpha: true, stencil: false, depth: false } );
+// renderer.setSize( window.innerWidth, window.innerHeight );
+// renderer.setClearColor( 0x000000, 0);
+// renderer.shadowMap.enabled = true;
+// renderer.shadowMapSoft = true; // Shadow
+// renderer.shadowMapType = THREE.PCFShadowMap; //Shadow
+// document.body.appendChild( renderer.domElement );
+
+
+//
+// let renderer;
+// let mesh;
+// let raycastHelperMesh;
+// let plane;
+// let uniforms;
+// let bgTexture;
+// let bgWidth;
+// let bgHeight;
+//
+// var loader = new THREE.TextureLoader();
+// var scene = new THREE.Scene();
+// bgTexture = loader.load('bg1.jpg');
+//
+//
+// scene.background = bgTexture;
+// bgTexture.wrapS = THREE.MirroredRepeatWrapping;
+// bgTexture.wrapT = THREE.MirroredRepeatWrapping;
+//
+//
+// var camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, .01, 100000 );
+// camera.position.set( 1, 1, -1 );
+// camera.lookAt( scene.position );
+//
+//
+//
+// renderer = new THREE.WebGLRenderer( { powerPreference: "high-performance", antialias: false, alpha: true, stencil: false, depth: false } );
+// renderer.setSize( window.innerWidth, window.innerHeight );
+// renderer.setClearColor( 0x000000, 0);
+// renderer.shadowMap.enabled = true;
+// renderer.shadowMapSoft = true; // Shadow
+// renderer.shadowMapType = THREE.PCFShadowMap; //Shadow
+// document.body.appendChild( renderer.domElement );
+//
