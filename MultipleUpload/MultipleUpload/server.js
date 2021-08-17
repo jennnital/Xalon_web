@@ -76,6 +76,12 @@ app.get('/', (req, res) => {
 
 });
 
+app.get('/test', (req, res) => {
+    //render the text
+    res.render('TitlePage');
+
+});
+
 
 //listen on the port number
 app.listen(4000);
