@@ -141,7 +141,7 @@ class CannonHelper{
         const submesh = new THREE.Object3D();
 
          THREE.ImageUtils.crossOrigin = '';
-          var floorMap = THREE.ImageUtils.loadTexture( "https://192.168.0.7:4000/upload/0009.png" );
+          var floorMap = THREE.ImageUtils.loadTexture( "https://192.168.0.7:4000/upload/0009.png" ); //i did a silly thing here i think pls ignore
           floorMap.wrapS = floorMap.wrapT = THREE.RepeatWrapping;
           floorMap.repeat.set( 25, 25 );
           var groundMaterial = new THREE.MeshPhongMaterial( { color: new THREE.Color('0xfc03d3'), specular: new THREE.Color('black'), shininess: 0, bumpMap: floorMap } );
@@ -754,7 +754,7 @@ var img2matrix = function () {
 //can add an array of things // url
 var check;
 Promise.all( [
-  img2matrix.fromUrl( '0009.png', sizeX, sizeY, minHeight, maxHeight )(),
+  img2matrix.fromUrl( 'X-render.jpg', sizeX, sizeY, minHeight, maxHeight )(),
 ] ).then( function ( data ) {
 
   var matrix = data[ 0 ];
@@ -873,7 +873,7 @@ scene.add( flagLight );
 
 
 //flag
- var texture = new THREE.TextureLoader().load('0009.png');
+ var texture = new THREE.TextureLoader().load('X-render.jpg');
 plane = new THREE.Mesh(new THREE.PlaneGeometry(600, 430, 20, 20, true), new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide }) );
 plane.scale.set(.0025, .0025, .0025);
 plane.position.set(0, 1.5, 0);
