@@ -1,3 +1,4 @@
+//Xalon intro scene
 
 const randnum = (min, max) => Math.round(Math.random() * (max - min) + min);
 
@@ -288,6 +289,8 @@ class CannonHelper{
           wireframe: false,
           color: new THREE.Color('wheat')
         });*/
+
+
         mesh = new THREE.Mesh(geometry, mat);
         break;
 
@@ -363,6 +366,9 @@ let uniforms;
 let bgTexture;
 let bgWidth;
 let bgHeight;
+
+
+
 
 var loader = new THREE.TextureLoader();
 var scene = new THREE.Scene();
@@ -484,7 +490,7 @@ gui.add(controls, 'hTiltR', 0, 1).onChange(controls.onChange);
 
 //activate tilt effect
 document.querySelector('.dg .c input[type="checkbox"]').click();
-// dat.GUI.toggleHide();
+// dat.GUI.toggleHide(); //hide dat.gui
 
 
 
@@ -594,12 +600,12 @@ loader.load( 'character2.glb', function ( object ) {
   mesh.add(player);
 
 
-  var lightPlayer = new THREE.PointLight(new THREE.Color('pink'), -1, 5);
+  var lightPlayer = new THREE.PointLight(new THREE.Color('pink'), 1);
   mesh.add(lightPlayer);
 
 
 
-
+// i didn't add animation to my model so it shows uuid errors on console
   var mixer = new THREE.AnimationMixer(player);
   clip1 = mixer.clipAction(object.animations[0]);
   clip2 = mixer.clipAction(object.animations[1]);
@@ -607,6 +613,7 @@ loader.load( 'character2.glb', function ( object ) {
 
 });
 
+// ======================================================add model character 3
 var loader3 = new THREE.GLTFLoader();
 loader.load( 'character3.glb', function ( object ) {
    object.scene.traverse( function( node ) {
@@ -617,17 +624,24 @@ loader.load( 'character3.glb', function ( object ) {
   });
 
   var player3 = object.scene;
-  player3.position.set(3, -0.3, 0 );
-  player3.scale.set(.2,.2,.2);
-  player3.rotateY(1);
-  mesh.add(player3);
+  player3.position.set(-3, 3, 8 );
+  player3.scale.set(.15,.15,.15);
+  player3.rotateY(1.8);
+  scene.add(player3);
 
+  //reference for character2 position
+  // player.position.set(0, .4, 0 );
+  // player.scale.set(.25,.25,.25);
+  // player.rotateY(-1);
 
-  var lightPlayer3 = new THREE.PointLight(new THREE.Color('pink'), -1, 5);
-  mesh.add(lightPlayer3);
+  var lightPlayer3 = new THREE.DirectionalLight(new THREE.Color('pink'), 1.5);
+  lightPlayer3.position.set(-2,4,6);
+  lightPlayer3.target=player3;
+  scene.add(lightPlayer3);
 
 });
 
+// ========================================add model character 4
 
 var loader4 = new THREE.GLTFLoader();
 loader.load( 'character4.glb', function ( object ) {
@@ -639,19 +653,25 @@ loader.load( 'character4.glb', function ( object ) {
   });
 
   var player4 = object.scene;
-  player4.position.set(-8, -0.3, 0 );
+  player4.position.set(-8, 3, 10 );
   player4.scale.set(.2,.2,.2);
-  player4.rotateY(-1);
-  mesh.add(player4);
+  player4.rotateY(1.8);
+  scene.add(player4);
 
 
-  var lightPlayer4 = new THREE.PointLight(new THREE.Color('pink'), -1, 5);
-  mesh.add(lightPlayer4);
+  var lightPlayer4 = new THREE.DirectionalLight(new THREE.Color('pink'), .8);
+  lightPlayer4.position.set(-2, 3, 8);
+  lightPlayer4.target = player4;
+  scene.add(lightPlayer4);
+
+  var lightPlayer4helper = new THREE.DirectionalLightHelper (lightPlayer4, 3); //why cant i see it on screen
+  scene.add(lightPlayer4helper);
+
 
 });
 
 //===================================================== add Terrain
-var sizeX = 128, sizeY = 128, minHeight = 0, maxHeight = 60;
+var sizeX = 128, sizeY = 128, minHeight = 0, maxHeight = 30;
 var startPosition = new CANNON.Vec3( 0, maxHeight - 3, sizeY * 0.5 - 10 );
 var img2matrix = function () {
 
@@ -937,6 +957,8 @@ loader.load("https://raw.githubusercontent.com/baronwatts/models/master/moon-veh
     geo.vertices.push( star );
   }
 
+
+//X particle system scale
   var sparks = new THREE.Points(geo, matts );
   sparks.scale.set(.05,.05,.05);
   scene.add(sparks);
@@ -1053,7 +1075,7 @@ function joystickCallback( forward, turn ){
 }
 
 function updateDrive(forward=js.forward, turn=js.turn){
-  const maxSteerVal = 0.2;
+  const maxSteerVal = 0.05;
   const maxForce = .15;
   const brakeForce = 10;
 
